@@ -4,7 +4,7 @@
 **Дисциплина:** Машинное обучение и ИИ  
 **Дата сдачи:** 2026-11-05  
 **Датасет:** [Kaggle: House Prices - Advanced Regression Techniques](https://www.kaggle.com/c/house-prices-advanced-regression-techniques)  
-
+ 
 ---
 
 ## 📊 Результаты моделей на тестовой выборке
