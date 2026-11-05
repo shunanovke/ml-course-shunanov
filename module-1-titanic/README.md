@@ -1,68 +1,49 @@
-# 🚢 Module 1 — Spaceship Titanic: EDA + бинарная классификация
+# 🚀 Module 1 — Spaceship Titanic: EDA и бинарная классификация
 
 **Автор:** Шунанов Кирилл Ерболатович, группа ПКТб-23-1  
 **Дисциплина:** Машинное обучение и ИИ  
-**Дата сдачи:** 2026-05-11
-**Датасет:** [Spaceship Titanic (Kaggle Competition)](https://www.kaggle.com/c/spaceship-titanic)  
+**Дата сдачи:** 2026-11-05  
+**Датасет:** [Kaggle: Spaceship Titanic](https://www.kaggle.com/c/spaceship-titanic)  
 
 ---
 
-## 📊 Результаты моделей
+## 📊 Результаты моделей на тестовой выборке
 
-| Модель | Accuracy | Precision | Recall | F1 | ROC-AUC | Время обучения |
+| Модель | Accuracy | Precision | Recall | F1-score | ROC-AUC | Время обучения |
 |---|---|---|---|---|---|---|
-| Logistic Regression | 0.7918 | 0.7862 | 0.8059 | 0.7959 | 0.8841 | 0.0263 сек |
-| Decision Tree | 0.7999 | 0.7927 | 0.8162 | 0.8043 | 0.8725 | 0.0244 сек |
-
+| Logistic Regression | 0.7894 | 0.7915 | 0.7852 | 0.7883 | **0.8761** | 0.045 сек |
+| Decision Tree | 0.8007 | 0.7986 | 0.8046 | 0.8016 | 0.8630 | 0.012 сек |
 
 > [!NOTE]
-> Все модели преодолели установленный целевой порог $ROC\text{-}AUC \ge 0.80$. Лучший результат по метрике площади под ROC-кривой показала ансамблевая модель Logistic Regression ($ROC\text{-}AUC = 0.876$).
+> Задача бинарной классификации: предсказать, был ли пассажир перемещен в другое измерение (`Transported`: 0 или 1).
+> Обе модели показали ROC-AUC > 0.86. Лучший результат по ROC-AUC показала **Logistic Regression** (0.876), а по Accuracy и F1-score — **Decision Tree** (0.80). 
+> Для предсказаний в `predict_passenger` мы используем обе модели (LR с масштабированием, DT без масштабирования).
 
 ---
 
-## 🚀 Быстрый старт (инференс из репозитория)
+## 🚀 Быстрый старт (инференс из GitHub репозитория)
 
 ```python
 import io
+import json
 import joblib
 import requests
+import numpy as np
 import pandas as pd
 
+# Базовый URL сырых файлов репозитория
 BASE_URL = "https://raw.githubusercontent.com/shunanovke/ml-course-shunanov/main/module-1-titanic"
 
-# 1. Загрузка обученной модели Random Forest
-model_url = f"{BASE_URL}/models/rf_model.pkl"
-rf_model = joblib.load(io.BytesIO(requests.get(model_url).content))
+# 1. Загрузка обученной модели Logistic Regression
+model_url = f"{BASE_URL}/models/lr_model.pkl"
+lr_model = joblib.load(io.BytesIO(requests.get(model_url).content))
 
-# 2. Загрузка списка признаков
+# 2. Загрузка StandardScaler (для LR)
+scaler_url = f"{BASE_URL}/models/scaler.pkl"
+scaler = joblib.load(io.BytesIO(requests.get(scaler_url).content))
+
+# 3. Загрузка списка признаков
 features_url = f"{BASE_URL}/models/feature_cols.json"
 feature_cols = requests.get(features_url).json()
 
-print(f"✅ Модель успешно загружена! Количество признаков: {len(feature_cols)}")
-```
-
----
-
-## 📁 Структура модуля
-
-```text
-module-1-titanic/
-├── README.md               # Отчёт и документация по первому модулю
-├── notebook.ipynb          # Полный Jupyter Notebook (все 14 обязательных разделов)
-├── data/
-│   ├── train.csv           # Обучающая выборка (8693 объекта)
-│   ├── test.csv            # Тестовая выборка (4277 объектов)
-│   └── titanic_info.md     # Подробное описание признаков и пропусков
-├── models/
-│   ├── lr_model.pkl        # Веса Logistic Regression
-│   ├── dt_model.pkl        # Веса Decision Tree
-│   ├── rf_model.pkl        # Веса Random Forest (бонусная ансамблевая модель)
-│   ├── scaler.pkl          # Обученный StandardScaler
-│   ├── feature_cols.json   # Точный порядок и список входных признаков
-│   └── metrics.json        # Итоговые метрики моделей и время обучения
-├── examples/
-│   ├── eda_plots.png       # Аналитическая сетка графиков первичного анализа
-│   ├── confusion_matrices.png # Матрицы ошибок классификаторов
-│   └── roc_curves.png      # График сравнительных ROC-кривых
-└── requirements.txt        # Список зависимостей с зафиксированными версиями
-```
+print("Модель и Scaler успешно загружены из репозитория!")
