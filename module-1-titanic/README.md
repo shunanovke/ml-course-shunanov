@@ -28,7 +28,7 @@ import joblib
 import requests
 import pandas as pd
 
-BASE_URL = "https://raw.githubusercontent.com/GuryevskayaValeriya/ml-course-shunanov/main/module-1-titanic"
+BASE_URL = "https://raw.githubusercontent.com/shunanovke/ml-course-shunanov/main/module-1-titanic"
 
 # 1. Загрузка обученной модели Random Forest
 model_url = f"{BASE_URL}/models/rf_model.pkl"
