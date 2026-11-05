@@ -2,27 +2,24 @@
 
 **Автор:** Шунанов Кирилл Ерболатович, группа ПКТб-23-1  
 **Дисциплина:** Машинное обучение и ИИ  
-**Дата сдачи:** 2026-10-06  
+**Дата сдачи:** 2026-11-05  
 **Датасет:** [Kaggle: House Prices - Advanced Regression Techniques](https://www.kaggle.com/c/house-prices-advanced-regression-techniques)  
 
 ---
 
 ## 📊 Результаты моделей на тестовой выборке
 
-| Модель | RMSE (log) | MAE (log) | $R^2$ | RMSE ($) | MAE ($) | Время обучения |
-|---|---|---|---|---|---|---|
-| Linear Regression | 0.1321 | 0.0922 | 0.8964 | $22,479 | $15,681 | 0.031 сек |
-| Ridge ($lpha=50.0$) | 0.1292 | 0.0890 | 0.9010 | $22,117 | $15,294 | 0.173 сек |
-| Lasso ($lpha=0.001$) | 0.1254 | 0.0854 | 0.9066 | $20,907 | $14,573 | 2.372 сек |
-| ElasticNet ($lpha=0.002$) | 0.1242 | 0.0845 | 0.9085 | $20,571 | $14,390 | 3.374 сек |
-| Random Forest (Бонус) | 0.1380 | 0.0918 | 0.8870 | $23,683 | $15,839 | 0.573 сек |
-| XGBoost (Бонус) | 0.1218 | 0.0824 | 0.9120 | $20,359 | $14,442 | 0.555 сек |
-| **Stacking Regressor (Лучшая)** | **0.1197** | **0.0804** | **0.9151** | **$19,467** | **$13,732** | **5.573 сек** |
+| Модель | RMSE (log) | MAE (log) | $R^2$ | RMSE ($) | Время обучения |
+|---|---|---|---|---|---|
+| Linear Regression | 0.1378 | 0.0938 | 0.8873 | $22,688 | 0.029 сек |
+| Ridge ($\alpha=10.0$) | 0.1276 | 0.0893 | 0.9034 | $21,631 | 0.004 сек |
+| **Lasso ($\alpha=0.0005$)** | **0.1239** | **0.0861** | **0.9090** | **$20,952** | **0.183 сек** |
+| ElasticNet ($\alpha=0.001, l1\_ratio=0.5$) | 0.1241 | 0.0862 | 0.9086 | $20,958 | 0.133 сек |
 
 > [!NOTE]
-> Все обученные регуляризованные и ансамблевые модели преодолели порог $R^2 \ge 0.90$.  
-> Лучший результат показал ансамбль **Stacking Regressor** ($R^2 = 0.9151$, RMSE в долларах = $19,467$).  
-> Среди линейных моделей лучшей оказалась **Lasso** ($R^2 = 0.9066$), которая занулила 60 неинформативных признаков из 220.
+> Все обученные регуляризованные модели преодолели целевой порог $R^2 \ge 0.90$.  
+> Лучший результат показала **Lasso** ($R^2 = 0.9090$, RMSE в долларах = $20,952$).  
+> Модель Lasso также выполнила отбор признаков, занулив 52 неинформативных признака из 238 (осталось 186 значимых).
 
 ---
 
@@ -39,7 +36,7 @@ import pandas as pd
 # Базовый URL сырых файлов репозитория
 BASE_URL = "https://raw.githubusercontent.com/shunanovke/ml-course-shunanov/main/module-2-house-prices"
 
-# 1. Загрузка лучшей модели (Lasso/Stacking)
+# 1. Загрузка лучшей модели (Lasso)
 model_url = f"{BASE_URL}/models/lasso_model.pkl"
 lasso_model = joblib.load(io.BytesIO(requests.get(model_url).content))
 
@@ -51,7 +48,7 @@ scaler = joblib.load(io.BytesIO(requests.get(scaler_url).content))
 features_url = f"{BASE_URL}/models/feature_cols.json"
 feature_cols = requests.get(features_url).json()
 
-# 4. Предсказание цены нового дома
+# 4. Предсказание цены нового дома (упрощенная логика)
 house = {
     'OverallQual': 9, 'TotalSF': 4600, 'GrLivArea': 2800,
     'YearBuilt': 2015, 'YearRemodAdd': 2015, 'YrSold': 2019,
@@ -68,36 +65,3 @@ df_new = df_new[feature_cols]
 pred_log = lasso_model.predict(scaler.transform(df_new))[0]
 pred_price = np.expm1(pred_log)
 print(f"Оценочная стоимость дома: ${pred_price:,.0f}")
-```
-
----
-
-## 📁 Структура модуля
-
-```
-module-2-house-prices/
-├── README.md                      # Описание модуля и метрик
-├── notebook.ipynb                 # Полный отчет (14 разделов, выполненные ячейки)
-├── requirements.txt               # Зависимости для воспроизведения
-├── data/
-│   ├── train.csv                  # Обучающая выборка (1460 строк)
-│   ├── test.csv                   # Тестовая выборка (1459 строк)
-│   ├── house_prices_info.md       # Подробная спецификация признаков
-│   └── submission.csv             # Kaggle submission
-├── models/
-│   ├── best_model.pkl             # Лучшая модель (Stacking)
-│   ├── lasso_model.pkl            # Lasso (L1)
-│   ├── ridge_model.pkl            # Ridge (L2)
-│   ├── enet_model.pkl             # ElasticNet
-│   ├── lr_model.pkl               # Базовая Linear Regression
-│   ├── xgb_model.pkl              # XGBoost Regressor
-│   ├── stacking_model.pkl         # Stacking Regressor
-│   ├── scaler.pkl                 # StandardScaler
-│   ├── feature_cols.json          # 220 отобранных признаков
-│   └── metrics.json               # Метрики всех моделей
-└── examples/
-    ├── eda_plots.png              # Графики разведочного анализа
-    ├── residuals.png              # График и распределение остатков
-    ├── predictions_scatter.png    # Реальные vs Предсказанные цены
-    └── feature_importances.png    # Топ коэффициентов признаков
-```
